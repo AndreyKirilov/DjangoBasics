@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<h1>Contact Us</h1>
+<form method="POST">
+    {% csrf_token %}
+    <h2>Contact Form</h2>
+    {{ contact_form }}
+    <button type="submit">Submit Contact</button>
+</form>    
+    
+    <h1>Subscribe to Newsletter</h1>
+    <form method="POST">
+        {% csrf_token %} }}
+        <h2>Subscription Form</h2>
+        {{ newsletter_form }}
+        <button type="submit">Submit Subscription Form</button>
+    </form>
+</body>
+</html>
