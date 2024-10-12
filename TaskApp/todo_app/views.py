@@ -2,7 +2,12 @@ from datetime import datetime
 
 from django.http import HttpResponse
 from django.shortcuts import render
+from django.urls import reverse_lazy
+
 from TaskApp.todo_app.forms import SomeForm, NameForm, ContactForm, NewsletterForm, BookFormSet
+from TaskApp.todo_app.models import Task
+from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView
+import datetime
 
 
 def index(request):
@@ -126,3 +131,64 @@ def book_view(request):
     }
 
     return render(request, 'book_form.html', context=context)
+
+# Class based views exercise
+
+
+class HomePage(TemplateView):
+    template_name = 'home_page.html'
+
+
+class TaskView(ListView):
+    model = Task
+    template_name = 'task_display.html'
+    context_object_name = 'tasks'
+    paginate_by = 5
+
+    def get_queryset(self):
+        query = self.request.GET.get('q')
+        if query:
+            return Task.objects.filter(name__icontains=query)
+        return Task.objects.all()
+
+
+class CreateTaskView(CreateView):
+    model = Task
+    fields = ['name', 'description']
+    template_name = 'create-instance.html'
+    success_url = reverse_lazy('tasks-list')
+
+    def form_valid(self, form):
+        name = form.cleaned_data.get('name')
+        if name[0] != 'A':
+            form.add_error('name', "The name should only start with 'A'")
+            return self.form_invalid(form)
+
+        return super().form_valid(form)
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['name'] = "A name for the new task"
+        initial['description'] = "A description for the new task"
+        return initial
+
+
+class TaskUpdateView(UpdateView):
+    model = Task
+    template_name = 'update_task.html'
+    fields = ['description']
+    success_url = reverse_lazy('tasks-list')
+
+    def form_valid(self, form):
+        created_at = form.cleaned_data.get('created_at')
+        if created_at and created_at > datetime.date.today():
+            form.add_error('created_at', 'The date cannot be in the future!')
+            return self.form_invalid(form)
+
+        return super().form_valid(form)
+
+
+class DeleteTaskView(DeleteView):
+    model = Task
+    template_name = 'delete_task.html'
+    success_url = reverse_lazy('tasks-list')
