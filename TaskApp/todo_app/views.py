@@ -5,9 +5,9 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 
 from TaskApp.todo_app.forms import SomeForm, NameForm, ContactForm, NewsletterForm, BookFormSet
-from TaskApp.todo_app.models import Task
+from TaskApp.todo_app.models import Task, Book
 from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView
-import datetime
+from TaskApp.todo_app.mixins import SetTimeRestriction
 
 
 def index(request):
@@ -73,7 +73,7 @@ def form_view(request):
             return render(request, "greeting.html", context)
 
         else:
-            return render(request, )
+            return render(request, 'some_form.html')
 
     context = {"form": form}
     return render(request, "some_form.html", context)
@@ -135,7 +135,7 @@ def book_view(request):
 # Class based views exercise
 
 
-class HomePage(TemplateView):
+class HomePage(SetTimeRestriction, TemplateView):
     template_name = 'home_page.html'
 
 
@@ -192,3 +192,16 @@ class DeleteTaskView(DeleteView):
     model = Task
     template_name = 'delete_task.html'
     success_url = reverse_lazy('tasks-list')
+
+
+class BookListView(ListView):
+    model = Book
+    context_object_name = 'books'
+    template_name = 'books/book_display.html'
+
+
+class BookCreateView(CreateView):
+    model = Book
+    fields = ['author', 'description', 'price']
+    template_name = 'books/book_create.html'
+    success_url = reverse_lazy('books-list')
